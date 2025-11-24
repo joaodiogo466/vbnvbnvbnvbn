@@ -146,15 +146,17 @@ def start_telegram_client():
         return TelegramClient('mt5_signal_session', api_id, api_hash).start(bot_token=bot_token)
     except AccessTokenExpiredError:
         logging.error("Bot token expired. Create a new bot token with BotFather and update bot_token.")
-        raise
     except ApiIdInvalidError:
         logging.error("Invalid api_id/api_hash. Verify your Telegram API credentials.")
-        raise
+    return None
 
 
 def main():
     logging.info("Bot started — initializing…")
     client = start_telegram_client()
+    if client is None:
+        logging.error("Telegram client could not start due to the authentication error above.")
+        return
     logging.info("Telegram client started and waiting for messages…")
 
     @client.on(events.NewMessage(chats=(signal_channel,)))
