@@ -1,5 +1,6 @@
 import MetaTrader5 as mt5
 from telethon import TelegramClient, events
+from telethon.errors import AccessTokenExpiredError, AuthKeyExpiredError, ApiIdInvalidError
 import re
 import logging
 
@@ -138,9 +139,25 @@ def close_positions(symbol):
 def tp2_message_detected(message):
     return "TP2 hit" in message or "CLOSE HERE NOW" in message
 
+def start_telegram_client():
+    """Start the Telegram client and surface clearer errors for common auth issues."""
+
+    try:
+        return TelegramClient('mt5_signal_session', api_id, api_hash).start(bot_token=bot_token)
+    except AccessTokenExpiredError:
+        logging.error("Bot token expired. Create a new bot token with BotFather and update bot_token.")
+        raise
+    except AuthKeyExpiredError:
+        logging.error("Session auth key expired. Delete the .session file and restart the bot to regenerate it.")
+        raise
+    except ApiIdInvalidError:
+        logging.error("Invalid api_id/api_hash. Verify your Telegram API credentials.")
+        raise
+
+
 def main():
     logging.info("Bot started — initializing…")
-    client = TelegramClient('mt5_signal_session', api_id, api_hash).start(bot_token=bot_token)
+    client = start_telegram_client()
     logging.info("Telegram client started and waiting for messages…")
 
     @client.on(events.NewMessage(chats=(signal_channel,)))
