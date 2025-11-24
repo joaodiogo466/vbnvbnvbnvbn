@@ -1,6 +1,6 @@
 import MetaTrader5 as mt5
 from telethon import TelegramClient, events
-from telethon.errors import AccessTokenExpiredError, AuthKeyExpiredError, ApiIdInvalidError
+from telethon.errors import AccessTokenExpiredError, ApiIdInvalidError
 import re
 import logging
 
@@ -146,9 +146,6 @@ def start_telegram_client():
         return TelegramClient('mt5_signal_session', api_id, api_hash).start(bot_token=bot_token)
     except AccessTokenExpiredError:
         logging.error("Bot token expired. Create a new bot token with BotFather and update bot_token.")
-        raise
-    except AuthKeyExpiredError:
-        logging.error("Session auth key expired. Delete the .session file and restart the bot to regenerate it.")
         raise
     except ApiIdInvalidError:
         logging.error("Invalid api_id/api_hash. Verify your Telegram API credentials.")
